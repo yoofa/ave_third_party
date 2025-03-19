@@ -16,6 +16,10 @@ vars = {
 
 deps = {
 
+  # openssl
+  'third_party/openssl':
+    'https://github.com/yoofa/third_party_openssl.git@cebc6ad07de0de260d41771692b216574c61d677',
+
   #'third_party/depot_tools':
   #  'https://chromium.googlesource.com/chromium/tools/depot_tools.git@feeac124f25235044d687bd84326a0e558951424',
 
