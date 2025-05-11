@@ -26,30 +26,16 @@ class ChromiumDepGraph {
     static final Map<String, PropertyOverride> PROPERTY_OVERRIDES = [
         androidx_multidex_multidex: new PropertyOverride(
             url: 'https://maven.google.com/androidx/multidex/multidex/2.0.0/multidex-2.0.0.aar'),
-        com_github_kevinstern_software_and_algorithms: new PropertyOverride(
-            licenseUrl: 'https://raw.githubusercontent.com/KevinStern/software-and-algorithms/master/LICENSE',
-            licenseName: 'MIT License'),
         com_google_android_datatransport_transport_api: new PropertyOverride(
             description: 'Interfaces for data logging in GmsCore SDKs.'),
-        // Chrome uses the window APIs directly instead of going through the androidx middleware.
-        // See //third_party/android_sdk/window_extensions/README.md
-        androidx_window_window: new PropertyOverride(exclude: true),
         com_google_android_datatransport_transport_backend_cct: new PropertyOverride(
             exclude: true),  // We're not using datatransport functionality.
         com_google_android_datatransport_transport_runtime: new PropertyOverride(
             exclude: true),  // We're not using datatransport functionality.
         com_google_android_gms_play_services_cloud_messaging: new PropertyOverride(
             description: 'Firebase Cloud Messaging library that interfaces with GmsCore.'),
-        com_google_android_gms_play_services_base: new PropertyOverride(
-            description: 'Base library for gmscore / Google Play Services.'),
         com_google_android_gms_play_services_location: new PropertyOverride(
             description: 'Provides data about the device\'s physical location via gmscore.'),
-        com_google_auto_auto_common: new PropertyOverride(
-            licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
-            licenseName: 'Apache 2.0'),
-        com_google_auto_service_auto_service: new PropertyOverride(
-            licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
-            licenseName: 'Apache 2.0'),
         com_google_auto_service_auto_service_annotations: new PropertyOverride(
             licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
             licenseName: 'Apache 2.0'),
@@ -62,22 +48,16 @@ class ChromiumDepGraph {
             licenseUrl: 'https://raw.githubusercontent.com/google/gson/master/LICENSE',
             licenseName: 'Apache 2.0'),
         com_google_errorprone_error_prone_annotation: new PropertyOverride(
-            url: 'https://github.com/google/error-prone/tree/master/annotation',
-            licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
-            licenseName: 'Apache 2.0',
-            description: 'ErrorProne Annotations.',),
+            // Robolectric has a (seemingly unnecessary) dep on this. It's meant to be needed
+            // only for writing custom Error Prone checks. Chrome's copy is within the
+            // Error Prone fat jar: //third_party/android_build_tools/error_prone
+            // Depending on this fat jar pulls in a conflicting copy of protobuf library.
+            exclude: true),
         com_google_errorprone_error_prone_annotations: new PropertyOverride(
             url: 'https://github.com/google/error-prone/tree/master/annotations',
             licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
             licenseName: 'Apache 2.0',
             description: 'ErrorProne Annotations.',),
-        com_google_errorprone_error_prone_type_annotations: new PropertyOverride(
-            url: 'https://github.com/google/error-prone/tree/master/type_annotations',
-            description: 'ErrorProne Annotations.',),
-        com_google_errorprone_error_prone_check_api: new PropertyOverride(
-            url: 'https://github.com/google/error-prone/tree/master/check_api'),
-        com_google_errorprone_error_prone_core: new PropertyOverride(
-            url: 'https://github.com/google/error-prone/tree/master/core'),
         com_google_firebase_firebase_annotations: new PropertyOverride(
             description: 'Common annotations for Firebase SKDs.'),
         com_google_firebase_firebase_common: new PropertyOverride(
@@ -102,10 +82,6 @@ class ChromiumDepGraph {
             description: 'Bridge interfaces for Firebase analytics into GmsCore.'),
         com_google_firebase_firebase_messaging: new PropertyOverride(
             description: 'Firebase Cloud Messaging SDK to send and receive push messages via FCM.'),
-        com_google_googlejavaformat_google_java_format: new PropertyOverride(
-            url: 'https://github.com/google/google-java-format',
-            licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
-            licenseName: 'Apache 2.0'),
         com_google_guava_failureaccess: new PropertyOverride(
             url: 'https://github.com/google/guava',
             licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
@@ -122,6 +98,10 @@ class ChromiumDepGraph {
             licenseName: 'Apache 2.0',
             // Both -jre and -android versions are listed. Filter to only the -android ones.
             versionFilter: '-android'),
+        com_google_testparameterinjector_test_parameter_injector: new PropertyOverride(
+        url: 'https://github.com/google/TestParameterInjector',
+            licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
+            licenseName: 'Apache 2.0'),
         com_squareup_wire_wire_runtime_jvm: new PropertyOverride(
             licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
             licenseName: 'Apache 2.0'),
@@ -138,15 +118,6 @@ class ChromiumDepGraph {
             licenseUrl: 'https://raw.githubusercontent.com/mojohaus/animal-sniffer/master/animal-sniffer-annotations/pom.xml',
             licensePath: 'licenses/Codehaus_License-2009.txt',
             licenseName: 'MIT'),
-        org_eclipse_jgit_org_eclipse_jgit: new PropertyOverride(
-            url: 'https://www.eclipse.org/jgit/',
-            licenseUrl: 'https://www.eclipse.org/org/documents/edl-v10.html',
-            licensePath: 'licenses/Eclipse_EDL.txt',
-            licenseName: 'BSD 3-Clause'),
-        com_google_protobuf_protobuf_java: new PropertyOverride(
-            url: 'https://github.com/protocolbuffers/protobuf/blob/master/java/README.md',
-            licenseUrl: 'https://raw.githubusercontent.com/protocolbuffers/protobuf/master/LICENSE',
-            licenseName: 'BSD'),
         com_google_protobuf_protobuf_lite: new PropertyOverride(
             exclude: true, // There is a phantom dep on this target, but this is deprecated and not used in chrome.
             url: 'https://github.com/protocolbuffers/protobuf/blob/master/java/README.md',
@@ -156,6 +127,9 @@ class ChromiumDepGraph {
             url: 'https://github.com/protocolbuffers/protobuf/blob/master/java/lite.md',
             licenseUrl: 'https://raw.githubusercontent.com/protocolbuffers/protobuf/master/LICENSE',
             licenseName: 'BSD'),
+        jakarta_inject_jakarta_inject_api: new PropertyOverride(
+            // Help gradle resolve the same version that our 3pp script does.
+            versionFilter: '\\d+\\.\\d+\\.\\d+$'),
         javax_annotation_javax_annotation_api: new PropertyOverride(
             isShipped: false,  // Annotations are stripped by R8.
             licenseName: 'CDDLv1.1',
@@ -178,21 +152,18 @@ class ChromiumDepGraph {
             licenseName: 'Apache 2.0'),
         org_checkerframework_checker_compat_qual: new PropertyOverride(
             licenseUrl: 'https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt',
-            licenseName: 'GPL v2 with the classpath exception'),
+            licenseName: 'GPL-2.0-with-classpath-exception'),
         org_checkerframework_checker_qual: new PropertyOverride(
             licenseUrl: 'https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt',
-            licenseName: 'GPL v2 with the classpath exception'),
+            licenseName: 'GPL-2.0-with-classpath-exception'),
         org_checkerframework_checker_util: new PropertyOverride(
             licenseUrl: 'https://raw.githubusercontent.com/typetools/checker-framework/master/checker-util/LICENSE.txt',
             licenseName: 'MIT'),
-        org_checkerframework_dataflow_errorprone: new PropertyOverride(
-            licenseUrl: 'https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt',
-            licenseName: 'GPL v2 with the classpath exception'),
         org_conscrypt_conscrypt_openjdk_uber: new PropertyOverride(
             licenseUrl: 'https://raw.githubusercontent.com/google/conscrypt/master/LICENSE',
             licenseName: 'Apache 2.0'),
         org_hamcrest_hamcrest: new PropertyOverride(
-            licenseUrl: 'https://raw.githubusercontent.com/hamcrest/JavaHamcrest/master/LICENSE.txt',
+            licenseUrl: 'https://raw.githubusercontent.com/hamcrest/JavaHamcrest/master/LICENSE',
             licenseName: 'BSD'),
         org_jsoup_jsoup: new PropertyOverride(
             cpePrefix: 'cpe:/a:jsoup:jsoup:1.14.3',
@@ -226,9 +197,6 @@ class ChromiumDepGraph {
         org_ow2_asm_asm_util: new PropertyOverride(
             licenseUrl: 'https://gitlab.ow2.org/asm/asm/raw/master/LICENSE.txt',
             licenseName: 'BSD'),
-        org_pcollections_pcollections: new PropertyOverride(
-            licenseUrl: 'https://raw.githubusercontent.com/hrldcpr/pcollections/master/LICENSE',
-            licenseName: 'The MIT License'),
         org_robolectric_annotations: new PropertyOverride(
             licenseUrl: 'https://raw.githubusercontent.com/robolectric/robolectric/master/LICENSE',
             licenseName: 'MIT'),
@@ -262,9 +230,6 @@ class ChromiumDepGraph {
         org_robolectric_shadows_framework: new PropertyOverride(
             licenseUrl: 'https://raw.githubusercontent.com/robolectric/robolectric/master/LICENSE',
             licenseName: 'MIT'),
-        org_robolectric_shadows_versioning: new PropertyOverride(
-            licenseUrl: 'https://raw.githubusercontent.com/robolectric/robolectric/master/LICENSE',
-            licenseName: 'MIT'),
         org_robolectric_utils: new PropertyOverride(
             licenseUrl: 'https://raw.githubusercontent.com/robolectric/robolectric/master/LICENSE',
             licenseName: 'MIT'),
@@ -273,19 +238,15 @@ class ChromiumDepGraph {
             licenseName: 'MIT'),
         // Prevent version changing ~weekly. https://crbug.com/1257197
         org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm: new PropertyOverride(
-            resolveVersion: '1.6.4'),
+            resolveVersion: '1.8.1'),
         org_jetbrains_kotlinx_kotlinx_coroutines_android: new PropertyOverride(
-            resolveVersion: '1.6.4'),
+            resolveVersion: '1.8.1'),
         org_jetbrains_kotlinx_kotlinx_coroutines_guava: new PropertyOverride(
-            resolveVersion: '1.6.4'),
-        org_jetbrains_kotlin_kotlin_stdlib_jdk8: new PropertyOverride(
-            resolveVersion: '1.8.20'),
-        org_jetbrains_kotlin_kotlin_stdlib_jdk7: new PropertyOverride(
-            resolveVersion: '1.8.20'),
-        org_jetbrains_kotlin_kotlin_stdlib: new PropertyOverride(
-            resolveVersion: '1.8.20'),
-        org_jetbrains_kotlin_kotlin_stdlib_common: new PropertyOverride(
-            resolveVersion: '1.8.20'),
+            resolveVersion: '1.8.1'),
+        org_jetbrains_kotlinx_kotlinx_serialization_core_jvm: new PropertyOverride(
+            resolveVersion: '1.7.2'),
+        org_jetbrains_kotlinx_kotlinx_coroutines_test_jvm: new PropertyOverride(
+            resolveVersion: '1.7.3'),
         io_grpc_grpc_binder: new PropertyOverride(
             licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
             licenseName: 'Apache 2.0'),
@@ -421,6 +382,17 @@ class ChromiumDepGraph {
             dep.supportsAndroid = true
             dep.testOnly = false
             dep.isShipped = true
+        }
+
+        // We only add testOnly after constructing the dependencies map, so now go through and see
+        // if we need to add testOnly to anything which depends on testOnly. In theory, this may
+        // need some recursion or looping to deal with multiple levels of unmarked targets, but I
+        // think in practice the only things getting annotated here will be a single level of
+        // synthetic groups which depend on testOnly targets.
+        dependencies.each { _, dep ->
+            dep.testOnly |= dep.children.any { id ->
+                dependencies.get(id).testOnly
+            }
         }
 
         PROPERTY_OVERRIDES.each { id, overrides ->
@@ -653,6 +625,32 @@ class ChromiumDepGraph {
         } else if (dep.id?.startsWith('com_google_firebase_')) {
             // Same as above for some firebase dependencies.
             dep.url = dep.url ?: 'https://firebase.google.com'
+        } else if (dep.id?.startsWith('androidx_')) {
+            // Some androidx dependencies don't set their URL, here is a good default.
+            dep.url = dep.url ?: 'https://developer.android.com/jetpack/androidx'
+        }
+
+        if (!dep.description && dep.id) {
+            // Some libraries do not come with a description. The only description we have for most
+            // of them is the name of the lib so might as well automate a fallback.
+            String lib_name = dep.id
+            String description = "pulled in via gradle."
+            // Removing common prefixes.
+            if (lib_name.startsWith('com_') || lib_name.startsWith('org_')) {
+                lib_name = lib_name.substring('com_'.length())
+            }
+            if (lib_name.startsWith('google_')) {
+                lib_name = lib_name.substring('google_'.length())
+            }
+            if (lib_name.startsWith('android_')) {
+                lib_name = lib_name.substring('android_'.length())
+            }
+            if (lib_name.startsWith('gms_play_services_')) {
+                lib_name = lib_name.substring('gms_play_services_'.length())
+                description = "library for gmscore / Google Play Services."
+            }
+            lib_name = lib_name.replace('_', ' ').capitalize()
+            dep.description = "$lib_name $description"
         }
 
         PropertyOverride overrides = PROPERTY_OVERRIDES.get(dep.id)
@@ -674,7 +672,7 @@ class ChromiumDepGraph {
         }
 
         if (skipLicenses) {
-            dep.licenses.clear()
+            dep.licenses = []
             if (dep.id?.endsWith('license')) {
                 dep.exclude = true
             }

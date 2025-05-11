@@ -42,7 +42,8 @@ class BuildConfigGenerator extends DefaultTask {
     private static final String DEPS_TOKEN_END = '# === ANDROID_DEPS Generated Code End ==='
     private static final Pattern DEPS_GEN_PATTERN = Pattern.compile(
             "${DEPS_TOKEN_START}(.*)${DEPS_TOKEN_END}", Pattern.DOTALL)
-    private static final String DOWNLOAD_DIRECTORY_NAME = 'libs'
+    private static final String DOWNLOAD_ROOT_DIRECTORY = 'cipd'
+    private static final String LIBS_DIRECTORY = 'libs'
     // The 3pp bot now adds an epoch to the version tag, this needs to be kept in sync with 3pp epoch at:
     /* groovylint-disable-next-line LineLength */
     // https://source.chromium.org/chromium/infra/infra/+/master:recipes/recipe_modules/support_3pp/resolved_spec.py?q=symbol:PACKAGE_EPOCH&ss=chromium
@@ -66,9 +67,11 @@ class BuildConfigGenerator extends DefaultTask {
         org_hamcrest_hamcrest_core: '//third_party/hamcrest:hamcrest_core_java',
         org_hamcrest_hamcrest_integration: '//third_party/hamcrest:hamcrest_integration_java',
         org_hamcrest_hamcrest_library: '//third_party/hamcrest:hamcrest_library_java',
-        org_jetbrains_kotlin_kotlin_stdlib: '//third_party/kotlin_stdlib:kotlin_stdlib_java',
         org_jetbrains_annotations: '//third_party/kotlin_stdlib:kotlin_stdlib_java',
+        org_jetbrains_kotlin_kotlin_stdlib_jdk7: '//third_party/kotlin_stdlib:kotlin_stdlib_java',
+        org_jetbrains_kotlin_kotlin_stdlib_jdk8: '//third_party/kotlin_stdlib:kotlin_stdlib_java',
         org_jetbrains_kotlin_kotlin_stdlib_common: '//third_party/kotlin_stdlib:kotlin_stdlib_java',
+        org_jetbrains_kotlin_kotlin_stdlib: '//third_party/kotlin_stdlib:kotlin_stdlib_java',
     ]
 
     // Some libraries have such long names they'll create a path that exceeds the 200 char path limit, which is
@@ -90,6 +93,7 @@ class BuildConfigGenerator extends DefaultTask {
         com_google_guava_failureaccess: '//third_party/android_deps:guava_android_java',
         com_google_guava_guava_android: '//third_party/android_deps:guava_android_java',
         com_google_protobuf_protobuf_javalite: '//third_party/android_deps:protobuf_lite_runtime_java',
+        net_bytebuddy_byte_buddy: '//third_party/byte_buddy:byte_buddy_android_java',
         // Logic for google_play_services_package added below.
     ]
 
@@ -117,16 +121,18 @@ class BuildConfigGenerator extends DefaultTask {
      * than fix the underlying issue (which is we should always use the snapshot
      * versions of androidx deps when possible). A better solution could be to
      * add it in //third_party/androidx/build.gradle.template
+     *
+     * If running fetch_all.py, you must first run fetch_all_androidx.py for
+     * changes to its build.gradle.template to take effect.
      */
     static final Set<String> ALLOWED_ANDROIDX_NON_SNAPSHOT_DEPS_PREFIXES = [
       'androidx_compose_material_material_icons_core_android',
       'androidx_constraintlayout',
-      'androidx_documentfile',
       'androidx_legacy',
       'androidx_localbroadcastmanager_localbroadcastmanager',
       'androidx_media3_media3',
       'androidx_multidex_multidex',
-      'androidx_print',
+      'androidx_pdf_pdf',
       'androidx_privacysandbox_ads_ads_adservices',
       'androidx_test',
     ]
@@ -174,6 +180,10 @@ class BuildConfigGenerator extends DefaultTask {
     @Input
     boolean ignoreDEPS
 
+    /** Whether .info files and BUILD.gn are in a cipd/ subdirectory. */
+    @Input
+    boolean allFilesInCipd
+
     /** The URI of the file BuildConfigGenerator.groovy */
     @Input
     @SourceURI
@@ -204,10 +214,20 @@ class BuildConfigGenerator extends DefaultTask {
             switch (license.name) {
                 case 'The Apache License, Version 2.0':
                 case 'The Apache Software License, Version 2.0':
-                    licenseStrings.add('Apache Version 2.0')
+                case 'Apache 2.0':
+                case 'Apache License 2.0':
+                case 'Apache License, Version 2.0':
+                case 'Apache Version 2.0':
+                    licenseStrings.add('Apache-2.0')
+                    break
+                case 'BSD':
+                    licenseStrings.add('BSD-3-Clause')
+                    break
+                case 'The MIT License':
+                    licenseStrings.add('MIT')
                     break
                 case 'GNU General Public License, version 2, with the Classpath Exception':
-                    licenseStrings.add('GPL v2 with the classpath exception')
+                    licenseStrings.add('GPL-2.0-with-classpath-exception')
                     break
                 default:
                     licenseStrings.add(license.name)
@@ -241,7 +261,7 @@ class BuildConfigGenerator extends DefaultTask {
         String cipdVersion = "${THREEPP_EPOCH}@${dependency.version}.${dependency.cipdSuffix}"
         String cipdPath = "${cipdBucket}/${repoPath}"
         // CIPD does not allow uppercase in names.
-        cipdPath += "/${DOWNLOAD_DIRECTORY_NAME}/$dependency.directoryName"
+        cipdPath += "/${LIBS_DIRECTORY}/$dependency.directoryName"
 
         // NOTE: The fetch_all.py script relies on the format of this file! See fetch_all.py:GetCipdPackageInfo().
         // NOTE: Keep the copyright year 2018 until this generated code is updated, avoiding annual churn of all
@@ -315,7 +335,7 @@ class BuildConfigGenerator extends DefaultTask {
     }
 
     static String make3ppPb(String cipdBucket, String repoPath) {
-        String pkgPrefix = "${cipdBucket}/${repoPath}/${DOWNLOAD_DIRECTORY_NAME}"
+        String pkgPrefix = "${cipdBucket}/${repoPath}/${LIBS_DIRECTORY}"
 
         return COPYRIGHT_HEADER + '\n' + GEN_REMINDER + """
             create {
@@ -527,6 +547,8 @@ class BuildConfigGenerator extends DefaultTask {
                 gnTarget = '//third_party/android_deps:guava_android_java'
             } else if (aliasedLib) {
                 gnTarget = aliasedLib
+            } else if (depTargetName.startsWith('google_play_services_') || depTargetName.startsWith('google_firebase_')) {
+                gnTarget = '$google_play_services_package:' + depTargetName
             } else if (isInDifferentRepo(dep)) {
                 String thirdPartyDir = (dep.id.startsWith('androidx')) ? 'androidx' : 'android_deps'
                 gnTarget = "//third_party/${thirdPartyDir}:${depTargetName}"
@@ -540,9 +562,6 @@ class BuildConfigGenerator extends DefaultTask {
                 // Prevent circular dep caused by having listenablefuture aliased to guava_android.
                 return
             }
-            if (gnTarget.startsWith(':google_play_services_') || gnTarget.startsWith(':google_firebase_')) {
-              gnTarget = '$google_play_services_package' + gnTarget
-            }
             // Target aliases can cause dupes.
             if (addedDeps.add(gnTarget)) {
                 depsStr += "\"${gnTarget}\","
@@ -555,32 +574,32 @@ class BuildConfigGenerator extends DefaultTask {
           condition = 'google_play_services_package == "//third_party/android_deps"'
         }
 
-        String libPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.directoryName}"
+        String libPath = "${LIBS_DIRECTORY}/${dependency.directoryName}"
         sb.append(GEN_REMINDER)
         if (condition != null) {
           sb.append("if ($condition) {\n")
         }
+        boolean isAndroidX = targetName.startsWith('androidx')
         if (dependency.extension == 'jar') {
-            String targetType = targetName.startsWith('androidx') ? 'androidx_java_prebuilt' : 'java_prebuilt'
+            String targetType = isAndroidX ? 'androidx_java_prebuilt' : 'java_prebuilt'
             sb.append("""\
                 ${targetType}("${targetName}") {
-                  jar_path = "${libPath}/${dependency.fileName}"
+                  jar_path = "${DOWNLOAD_ROOT_DIRECTORY}/${libPath}/${dependency.fileName}"
                   output_name = "${dependency.id}"
                 """.stripIndent(/* forceGroovyBehavior */ true))
             if (dependency.supportsAndroid) {
                 sb.append('  supports_android = true\n')
             }
         } else if (dependency.extension == 'aar') {
-            String targetType = (targetName.startsWith('androidx') ?
-                    'androidx_android_aar_prebuilt' : 'android_aar_prebuilt')
+            String targetType = isAndroidX ? 'androidx_android_aar_prebuilt' : 'android_aar_prebuilt'
+            String maybeSubdir = allFilesInCipd ? "${DOWNLOAD_ROOT_DIRECTORY}/" : ""
             sb.append("""\
                 ${targetType}("${targetName}") {
-                  aar_path = "${libPath}/${dependency.fileName}"
-                  info_path = "${libPath}/${BuildConfigGenerator.reducedDepencencyId(dependency.id)}.info"
+                  aar_path = "${DOWNLOAD_ROOT_DIRECTORY}/${libPath}/${dependency.fileName}"
+                  info_path = "${maybeSubdir}${libPath}/${BuildConfigGenerator.reducedDepencencyId(dependency.id)}.info"
             """.stripIndent(/* forceGroovyBehavior */ true))
         } else if (dependency.extension == 'group') {
-            String targetType = (targetName.startsWith('androidx') ?
-                    'androidx_java_group' : 'java_group')
+            String targetType = isAndroidX ? 'androidx_java_group' : 'java_group'
             sb.append("""\
                 ${targetType}("${targetName}") {
             """.stripIndent(/* forceGroovyBehavior */ true))
@@ -619,7 +638,9 @@ class BuildConfigGenerator extends DefaultTask {
         if (aliasedLib) {
             // Cannot add only the specific target because doing so breaks nested template target.
             String visibilityLabel = aliasedLib.replaceAll(':.*', ':*')
-            sb.append('  # Target is swapped out when internal code is enabled.\n')
+            if (CONDITIONAL_LIBS.containsKey(dependency.id)) {
+              sb.append('  # Target is swapped out when internal code is enabled.\n')
+            }
             sb.append("  # Please depend on $aliasedLib instead.\n")
             sb.append("  visibility = [ \"$visibilityLabel\" ]\n")
         } else if (!dependency.visible) {
@@ -638,8 +659,8 @@ class BuildConfigGenerator extends DefaultTask {
     }
 
     boolean isInDifferentRepo(ChromiumDepGraph.DependencyDescription dependency) {
-        boolean isAndroidxRepository = (repositoryPath == 'third_party/androidx')
-        boolean isAndroidxDependency = (dependency.id.startsWith('androidx'))
+        boolean isAndroidxRepository = repositoryPath.startsWith('third_party/androidx')
+        boolean isAndroidxDependency = dependency.id.startsWith('androidx')
         if (isAndroidxRepository != isAndroidxDependency) {
             return true
         }
@@ -678,7 +699,7 @@ class BuildConfigGenerator extends DefaultTask {
     }
 
     private static String computeDepDir(ChromiumDepGraph.DependencyDescription dependency) {
-        return "${DOWNLOAD_DIRECTORY_NAME}/${dependency.directoryName}"
+        return "${LIBS_DIRECTORY}/${dependency.directoryName}"
     }
 
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId, String dependencyExtension) {
@@ -794,6 +815,9 @@ class BuildConfigGenerator extends DefaultTask {
                 // and android_aar_prebuilt template will fail if it's not set explictly.
                 sb.append('  extract_native_libraries = true\n')
                 break
+            case 'com_google_auto_service_auto_service_annotations_java':
+                sb.append('  preferred_dep = true\n')
+                break
             case 'com_google_guava_guava':
             case 'com_google_guava_guava_android':
                 sb.append('\n')
@@ -835,7 +859,13 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  jar_excluded_patterns = [\n')
                 sb.append('    "org/mockito/internal/junit/ExceptionFactory*",\n')
                 sb.append('    "org/mockito/internal/stubbing/defaultanswers/ReturnsEmptyValues*",\n')
-                sb.append('  ]')
+                sb.append('  ]\n')
+                sb.append('\n')
+                sb.append('  # Because of dep on byte_buddy_android_java.\n')
+                sb.append('  bypass_platform_checks = true\n')
+                break
+            case 'com_google_android_apps_common_testing_accessibility_framework_accessibility_test_framework':
+                sb.append('  proguard_configs = [ "local_modifications/accessibility_test_framework.pcfg" ]')
                 break
         }
     }
@@ -966,18 +996,18 @@ class BuildConfigGenerator extends DefaultTask {
             if (excludeDependency(dependency) || computeJavaGroupForwardingTargets(dependency)) {
                 return
             }
-            String depPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.directoryName}"
+            String depPath = "${LIBS_DIRECTORY}/${dependency.directoryName}"
             String cipdPath = "${cipdBucket}/${repoPath}/${depPath}"
             sb.append("""\
             |
-            |  'src/${repoPath}/${depPath}': {
+            |  'src/${repoPath}/${DOWNLOAD_ROOT_DIRECTORY}/${depPath}': {
             |      'packages': [
             |          {
             |              'package': '${cipdPath}',
             |              'version': 'version:${THREEPP_EPOCH}@${dependency.version}.${dependency.cipdSuffix}',
             |          },
             |      ],
-            |      'condition': 'checkout_android',
+            |      'condition': 'checkout_android and non_git_source',
             |      'dep_type': 'cipd',
             |  },
             |""".stripMargin())
