@@ -502,10 +502,11 @@ class BuildConfigGenerator extends DefaultTask {
         }
 
         // 3. Generate the root level build files
+        // TODO(youfa): not root/DEPS, but root/third_party/DEPS
         updateBuildTargetDeclaration(graph, normalisedRepoPath)
         if (!ignoreDEPS) {
             updateDepsDeclaration(graph, cipdBucket, repositoryPath,
-                                  "${normalisedRepoPath}/../../DEPS")
+                                  "${normalisedRepoPath}/../DEPS")
         }
         dependencyDirectories.sort { path1, path2 -> return path1 <=> path2 }
         updateReadmeReferenceFile(dependencyDirectories,
@@ -998,9 +999,10 @@ class BuildConfigGenerator extends DefaultTask {
             }
             String depPath = "${LIBS_DIRECTORY}/${dependency.directoryName}"
             String cipdPath = "${cipdBucket}/${repoPath}/${depPath}"
+            // TODO(youfa): remove 'src' here
             sb.append("""\
             |
-            |  'src/${repoPath}/${DOWNLOAD_ROOT_DIRECTORY}/${depPath}': {
+            |  '${repoPath}/${DOWNLOAD_ROOT_DIRECTORY}/${depPath}': {
             |      'packages': [
             |          {
             |              'package': '${cipdPath}',

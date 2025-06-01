@@ -68,7 +68,7 @@ _PRIMARY_ANDROID_DEPS_FILES = [
 # Git-controlled files needed by and updated by this tool.
 # Relative to args.android_deps_dir.
 _CUSTOM_ANDROID_DEPS_FILES = [
-    os.path.join('..', '..', 'DEPS'),
+    os.path.join('..', 'DEPS'),
     _BUILD_GN,
     _ADDITIONAL_README_PATHS,
     'subprojects.txt',
