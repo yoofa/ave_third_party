@@ -813,6 +813,7 @@ if (!limit_android_deps) {
     output_name = "com_googlecode_java_diff_utils_diffutils"
     supports_android = true
     enable_bytecode_checks = false
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -844,6 +845,7 @@ if (!limit_android_deps) {
     output_name = "com_squareup_wire_wire_runtime_jvm"
     supports_android = true
     enable_bytecode_checks = false
+    testonly = true
     deps = [
       ":com_squareup_okio_okio_jvm_java",
       "//third_party/kotlin_stdlib:kotlin_stdlib_java",
@@ -883,6 +885,7 @@ if (!limit_android_deps) {
 
     # Please depend on //third_party/byte_buddy:byte_buddy_android_java instead.
     visibility = [ "//third_party/byte_buddy:*" ]
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -891,6 +894,7 @@ if (!limit_android_deps) {
     output_name = "org_ccil_cowan_tagsoup_tagsoup"
     supports_android = true
     enable_bytecode_checks = false
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -991,6 +995,7 @@ if (!limit_android_deps) {
     output_name = "org_jsoup_jsoup"
     supports_android = true
     enable_bytecode_checks = false
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1231,6 +1236,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1428,6 +1434,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1443,6 +1450,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1458,6 +1466,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
     deps = [
       ":com_squareup_okio_okio_jvm_java",
       "//third_party/kotlin_stdlib:kotlin_stdlib_java",
@@ -1493,6 +1502,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1508,6 +1518,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1522,6 +1533,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1537,6 +1549,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1568,6 +1581,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
     deps = [
       ":org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm_java",
       "//third_party/kotlin_stdlib:kotlin_stdlib_java",
@@ -1587,6 +1601,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1601,6 +1616,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
     is_robolectric = true
   }
 
@@ -1663,6 +1679,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
     is_robolectric = true
   }
 
@@ -1865,6 +1882,7 @@ if (!limit_android_deps) {
       ":*",
       "//third_party/androidx:*",
     ]
+    testonly = true
   }
 }
 # === Generated Code End ===
