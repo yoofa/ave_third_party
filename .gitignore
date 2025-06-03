@@ -98,6 +98,7 @@
 /llvm-bootstrap-install
 /llvm-build/
 /llvm-build-tools
+/llvm-libc/src
 /cronet_android_mainline_clang/linux-amd64
 /mesa/src
 /microsoft_dxheaders/src
@@ -226,3 +227,4 @@
 /requests/src
 /ub-uiautomator
 /usrsctp
+/openssl
