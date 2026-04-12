@@ -167,6 +167,18 @@ deps = {
   'third_party/libjpeg_turbo':
     'https://chromium.googlesource.com/chromium/deps/libjpeg_turbo.git@927aabfcd26897abb9776ecf2a6c38ea5bb52ab6',
 
+  'third_party/google-java-format/cipd': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/google-java-format',
+              'version': 'vwy9yNEcAztEM-pQboJifH7_IPdxc5LkhQZMp2XKQ-UC',
+          },
+      ],
+      # Needed on Linux for use on chromium_presubmit.
+      'condition': '(checkout_android or checkout_linux) and non_git_source',
+      'dep_type': 'cipd',
+  },
+
   ### Android
   'third_party/android_sdk/public': {
       'packages': [
